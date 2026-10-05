@@ -1,0 +1,3 @@
+import type {Metadata} from "next";import "./globals.css";import {Header,Footer} from "@/components/header";
+export const metadata:Metadata={metadataBase:new URL("https://vowly.eg"),title:{default:"VOWLY — Plan Your Perfect Day",template:"%s | VOWLY"},description:"Everything you need to create the wedding you've always imagined — all in one place.",openGraph:{title:"VOWLY — Plan Your Perfect Day",description:"A thoughtful way to plan your wedding in Egypt.",type:"website"}};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><Header/>{children}<Footer/></body></html>}

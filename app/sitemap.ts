@@ -1,0 +1,1 @@
+import type {MetadataRoute} from "next";import {vendors} from "@/lib/data";export default function sitemap():MetadataRoute.Sitemap{const base="https://vowly.eg";return ["","about","services","vendors","blog","contact"].map(x=>({url:`${base}/${x}`,lastModified:new Date()})).concat(vendors.map(x=>({url:`${base}/vendors/${x.id}`,lastModified:new Date()})))}
