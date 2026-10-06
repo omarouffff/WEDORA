@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import { VerifyEmailPanel } from "@/components/auth-forms";
+export const metadata: Metadata = { title: "Confirm your email", robots: { index: false } };
+export default async function VerifyEmailPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) { const { token } = await searchParams; return <main className="mx-auto min-h-[68vh] max-w-md px-6 py-16"><div className="rounded-2xl border border-[#e9e4de] bg-white p-7 shadow-sm md:p-9"><p className="text-xs uppercase tracking-[.2em] text-[#a6796f]">A quick confirmation</p><h1 className="serif mt-2 text-4xl">Confirm your email.</h1><p className="mt-3 text-sm leading-6 text-[#817970]">Confirm your email to keep your WEDORA account safe.</p><div className="mt-7"><VerifyEmailPanel token={token}/></div></div></main>; }

@@ -1,7 +1,9 @@
 node_modules
-.next
-.next-build
+.next*/
 .env
 .env.local
+.env.*.local
 coverage
 *.tsbuildinfo
+.pgdata
+public/uploads

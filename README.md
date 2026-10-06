@@ -1,47 +1,58 @@
-# VOWLY
+# WEDORA
 
-VOWLY is a wedding planning MVP for couples planning celebrations in Egypt. The current build combines an editorial vendor discovery experience with local demo planning tools and a PostgreSQL/Prisma foundation.
+WEDORA is an Egypt-focused wedding planning and vendor marketplace MVP. Couples can organize tasks, budget, guests and RSVPs, shortlist vendors, request bookings, message vendors, and publish a personal wedding page. Vendor and admin workspaces use server-side role checks.
 
-## What's here
+## Stack and architecture
 
-- Premium responsive homepage, brand pages, inspiration articles, category routes, vendor search, filters, profiles, related vendors, and Egyptian pound pricing.
-- Browser-saved demo checklist, budget with category chart and over-budget state, guest list, and RSVP status counts.
-- AI wedding plan endpoint with Zod validation, OpenAI integration on the server, and a deterministic local fallback.
-- PostgreSQL Prisma schema covering identity, weddings, vendors, tasks, budgets, guests, RSVPs, websites, bookings, favorites, messaging, payments, notifications, and recommendations.
-- Metadata, Open Graph defaults, robots, and sitemap.
+- Next.js App Router, React, TypeScript, Tailwind CSS
+- PostgreSQL with Prisma migrations and seed data
+- Signed, HTTP-only session cookies with database-backed role and suspension checks
+- Server Actions validated with Zod; business calculations live in `lib/calculations.ts`
+- Server-side OpenAI integration with deterministic mock fallback
+- Resend-compatible email abstraction with local console fallback
+- Paymob/Stripe integration keys are reserved; payment processing is not enabled
 
-Planning data on the current demo dashboard is stored in that browser's local storage. It does not sync between devices or users. Supabase packages and environment placeholders are included, but authentication, role guards, and storage uploads still need to be connected before production use. Marketplace sample vendors are fictional and live in `lib/data.ts` so the catalog can be browsed without a database.
+## Features
 
-## Stack
+- Public editorial homepage, vendor search and profiles, service/category pages, blog, sitemap and robots rules
+- Couple dashboard, planner, budget, guest list, favorites, bookings, messages, AI planner and wedding website editor
+- Published wedding sites at `/w/[slug]` with persistent RSVP submission
+- Vendor dashboard and booking request review
+- Admin overview, vendor approval and couple directory
+- Fictional Egyptian seed vendors in Cairo, Giza and Alexandria
 
-Next.js App Router, React, TypeScript, Tailwind CSS 4, Prisma, PostgreSQL, Supabase client packages, Zod, OpenAI server SDK, Recharts, Lucide, and Framer Motion.
+## Local setup
 
-## Run locally
-
-1. Install Node.js 20+ and PostgreSQL 15+.
-2. Copy `.env.example` to `.env` and set `DATABASE_URL` and `DIRECT_URL` to your PostgreSQL database.
-3. Install packages: `npm install`.
-4. Generate Prisma client: `npm run db:generate`.
-5. Create/update database tables: `npm run db:push`.
-6. Seed categories: `npm run db:seed`.
-7. Start the app: `npm run dev`.
-
-The public experience and local planning screens can run without Supabase, OpenAI, payments, email, or maps. Without `OPENAI_API_KEY`, the AI planner returns a practical local plan. Add `OPENAI_API_KEY` to `.env` to enable server-side OpenAI generation.
+1. Install Node.js 20+ and run `npm install`.
+2. Copy `.env.example` to `.env`. Set a PostgreSQL `DATABASE_URL` and `DIRECT_URL`, plus a random `AUTH_SECRET` of at least 32 characters.
+3. For the bundled local PostgreSQL helper, run `npm run db:local` in a separate terminal and use the local URLs from `.env.example`.
+4. Run `npm run db:deploy` to apply checked-in migrations. For a new development database, `npx prisma migrate dev` may be used to create migrations.
+5. Seed demo categories and fictional marketplace profiles with `npm run db:seed`.
+6. Start the app with `npm run dev`.
 
 ## Environment variables
 
-See `.env.example` for PostgreSQL, Supabase, OpenAI, Google Maps, Paymob, Stripe, and Resend integration keys. Keep secrets on the server; only Supabase URL and anon key are intended to be public.
+See `.env.example`. `DATABASE_URL`, `DIRECT_URL`, and `AUTH_SECRET` are required for production. `OPENAI_API_KEY` enables hosted AI generation; without it the planner uses the local deterministic response. `RESEND_API_KEY` and `EMAIL_FROM` enable email delivery; local mail is written to the server console. Supabase, Google Maps, Paymob and Stripe settings are integration hooks and are not required for current flows. Never expose service-role or provider secrets to the browser.
 
-## Database
+## Database operations
 
-The Prisma schema is `prisma/schema.prisma`. `npm run db:push` is convenient for local development. For production, generate and review Prisma migrations, then apply with `npx prisma migrate deploy`. The seed command creates the marketplace category records; the fictional demo vendor catalog is currently static data so discovery remains available before a database is connected.
+- Schema: `prisma/schema.prisma`
+- Checked-in migration: `prisma/migrations/`
+- Apply production migrations: `npm run db:deploy`
+- Seed: `npm run db:seed`
+- Do not use `npm run db:reset` against any database containing user data.
 
 ## Quality checks
 
-- `npm run typecheck`
-- `npm run build`
-- `npx prisma validate` (requires `DATABASE_URL` and `DIRECT_URL`)
+```sh
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npx prisma validate
+npx prisma migrate status
+```
 
-## Current MVP boundaries
+## Deployment notes and current limits
 
-Authentication and server-side authorization, persistent couple-specific records, booking and message workflows, live RSVP writes, vendor/admin management, payments, transactional email, Google Maps, and production migration coverage are not connected yet. The corresponding database models and environment hooks provide the foundation. Do not deploy this demo as a production application until these flows and security controls are implemented.
+Configure a managed PostgreSQL database, a unique 32+ character `AUTH_SECRET`, a stable `NEXT_PUBLIC_APP_URL`, and the production sender/domain before deployment. Apply migrations before starting new application instances. Local in-memory rate limits are per process and should be replaced with a shared store for multi-instance deployments. Supabase Auth/Storage, real-time messaging, payments, maps, and scheduled deadline notifications are not active integrations yet. Review the deployment domain in `app/layout.tsx`, `app/robots.ts`, and `app/sitemap.ts` before publishing under a different hostname.

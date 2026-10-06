@@ -1,0 +1,5 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ResetPasswordForm } from "@/components/auth-forms";
+export const metadata: Metadata = { title: "Choose a new password", robots: { index: false } };
+export default async function ResetPasswordPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) { const { token } = await searchParams; return <main className="mx-auto min-h-[68vh] max-w-md px-6 py-16"><div className="rounded-2xl border border-[#e9e4de] bg-white p-7 shadow-sm md:p-9"><p className="text-xs uppercase tracking-[.2em] text-[#a6796f]">One last step</p><h1 className="serif mt-2 text-4xl">Choose a new password.</h1>{token ? <div className="mt-7"><ResetPasswordForm token={token}/></div> : <p role="alert" className="mt-5 text-sm text-[#817970]">This reset link is missing its token. Please request a new one.</p>}<Link href="/forgot-password" className="mt-6 block text-center text-sm text-[#9c6b61] hover:underline">Request another link</Link></div></main>; }
