@@ -12,4 +12,6 @@ export const vendors:Vendor[]=[
 {id:"orchard-estate",name:"Orchard Estate",category:"Venues",city:"Giza",area:"6th of October",price:72000,rating:4.8,reviews:74,verified:true,style:"Garden, Rustic",image:"photo-1519741497674-611481863552",description:"An open-air estate tucked among olive trees, made for long evenings outdoors."}
 ];
 export const categories=["Venues","Photography","Decoration","Makeup","Catering","Music","Flowers","Dresses","Transportation"];
+export const categoryPhotos:Record<string,string>={Venues:"photo-1519167758481-83f550bb49b3",Photography:"photo-1537633552985-df8429e8048b",Decoration:"photo-1519225421980-715cb0215aed",Makeup:"photo-1753499819799-fd0bdf7b8621",Catering:"photo-1464366400600-7168b8af9bc3",Music:"photo-1516280440614-37939bbacd81",Flowers:"photo-1490750967868-88aa4486c946",Dresses:"photo-1594552072238-b8a33785b261",Transportation:"photo-1441148345475-03a2e82f9719"};
+export function weddingCategoryPhoto(image:string|undefined,category:string){if(image?.startsWith("http")&&!image.includes("images.unsplash.com/"))return image;return categoryPhotos[category]??image??categoryPhotos.Venues}
 export const photo=(id:string,w=900)=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=85`;

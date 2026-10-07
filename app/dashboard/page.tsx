@@ -5,6 +5,7 @@ import { requirePageCouple } from "@/lib/auth/guards";
 import { planningProgress, guestSummary, daysUntil } from "@/lib/calculations";
 import { money } from "@/lib/utils";
 import { VendorCard } from "@/components/vendor-card";
+import { weddingCategoryPhoto } from "@/lib/data";
 
 const shortcuts = [
   { label: "Your checklist", href: "/dashboard/planner", icon: ClipboardList },
@@ -15,8 +16,8 @@ const shortcuts = [
   { label: "Messages", href: "/dashboard/messages", icon: ArrowRight },
 ];
 
-function vendorImageId(url: string | null) {
-  return url?.match(/images\.unsplash\.com\/([^?]+)/)?.[1] ?? "photo-1519741497674-611481863552";
+function vendorImageId(url: string | null, category: string) {
+  return weddingCategoryPhoto(url ?? undefined, category);
 }
 
 export default async function Dashboard() {
@@ -35,15 +36,17 @@ export default async function Dashboard() {
   const remaining = total - spent;
   const days = daysUntil(wedding.date);
   const firstName = user.profile?.name?.split(" ")[0] ?? "there";
+  const nextTask = tasks.find(task => task.status !== "DONE");
   const recommended = vendors.map(v => ({
     id: v.id, name: v.name, category: v.category.name, city: v.city, area: v.area || v.city,
     price: Number(v.startingPrice), rating: v.rating, reviews: v.reviewCount,
-    verified: v.verification === "VERIFIED", style: v.styles.join(", "), image: vendorImageId(v.imageUrl), description: v.description,
+    verified: v.verification === "VERIFIED", style: v.styles.join(", "), image: vendorImageId(v.imageUrl, v.category.name), description: v.description,
   }));
 
   return <main className="mx-auto min-h-[70vh] max-w-[1320px] px-6 py-12">
     <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="text-xs uppercase tracking-[.2em] text-[#a6796f]">Your planning space</p><h1 className="serif mt-2 text-4xl md:text-5xl">A day worth dreaming about.</h1><p className="mt-3 text-sm text-[#817970]">Welcome back, {firstName}. Let’s make the next little thing happen.</p></div>
       <div className="flex items-center gap-3 rounded-full border border-[#e9e4de] bg-white px-4 py-2.5 text-sm"><CalendarDays size={17} className="text-[#a6796f]"/><span>Your wedding date</span><b>{wedding.date ? wedding.date.toLocaleDateString("en-EG", { month: "short", day: "numeric", year: "numeric" }) : "Not set"}</b></div></div>
+    <section className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#e9e4de] bg-white p-5 md:px-7"><div><p className="text-xs uppercase tracking-[.16em] text-[#a6796f]">Your next step</p><h2 className="serif mt-1 text-xl">{nextTask?.title ?? (tasks.length ? "You’ve made it through your checklist." : "Start with one small step.")}</h2><p className="mt-1 text-xs text-[#817970]">{nextTask ? `${nextTask.category}${nextTask.dueDate ? ` · Due ${nextTask.dueDate.toLocaleDateString("en-EG", { day: "numeric", month: "short" })}` : " · Ready when you are"}` : tasks.length ? "Take a moment, then look ahead when you’re ready." : "Add a task and we’ll keep your progress together."}</p></div><Link href="/dashboard/planner" className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#302d29] px-5 text-xs text-white transition hover:bg-[#51463f]">{nextTask ? "Open checklist" : tasks.length ? "Review checklist" : "Add your first task"}<ArrowRight size={14}/></Link></section>
     <section className="mt-8 grid gap-4 md:grid-cols-3"><div className="rounded-2xl bg-[#37312d] p-7 text-white md:col-span-2"><div className="text-xs uppercase tracking-[.18em] text-white/55">{days === null ? "Your wedding countdown" : "The countdown is on"}</div><div className="serif mt-2 text-5xl">{days === null ? "Set your date" : <>{days} <span className="text-2xl">days to go</span></>}</div><div className="mt-6 h-1.5 overflow-hidden rounded bg-white/15"><div className="h-full rounded bg-[#d5bba7] transition-all" style={{ width: `${progress}%` }}/></div><div className="mt-2 flex justify-between text-[11px] text-white/55"><span>{progress}% of checklist complete</span><span>{tasks.length} next steps</span></div></div>
       <div className="rounded-2xl border border-[#e9e4de] bg-white p-7"><div className="text-xs text-[#817970]">Wedding budget</div><div className="serif mt-2 text-3xl">{money(total)}</div><div className="mt-2 text-xs text-[#817970]">{money(spent)} spent · {money(remaining)} remaining</div><Link href="/dashboard/budget" className="mt-5 inline-flex items-center gap-2 text-xs">View budget <ArrowRight size={14}/></Link></div></section>
     <section className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border border-[#e9e4de] bg-white p-4"><div className="text-xs text-[#817970]">Guests</div><div className="serif mt-1 text-2xl">{rsvps.total} <span className="text-sm">invited</span></div><div className="mt-1 text-xs text-[#817970]">{rsvps.confirmed} confirmed · {rsvps.pending} awaiting reply</div></div><div className="rounded-xl border border-[#e9e4de] bg-white p-4"><div className="text-xs text-[#817970]">Bookings</div><div className="serif mt-1 text-2xl">{bookings.length} <span className="text-sm">recent</span></div><Link href="/dashboard/bookings" className="mt-1 inline-block text-xs text-[#9c6b61]">View requests</Link></div><div className="rounded-xl border border-[#e9e4de] bg-white p-4"><div className="text-xs text-[#817970]">Planning progress</div><div className="serif mt-1 text-2xl">{progress}%</div><Link href="/dashboard/planner" className="mt-1 inline-block text-xs text-[#9c6b61]">Continue your checklist</Link></div></section>

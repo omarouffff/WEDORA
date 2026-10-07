@@ -64,6 +64,16 @@ export function PlannerBoard({ initialTasks }: { initialTasks: WeddingTask[] }) 
 
   const doneCount = tasks.filter(t => t.status === "DONE").length;
   const progress = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(today);
+  weekEnd.setDate(today.getDate() + 7);
+  const groups = [
+    { title: "Today", hint: "Due today or ready to start", tasks: tasks.filter(t => t.status !== "DONE" && t.dueDate && new Date(t.dueDate) <= today) },
+    { title: "This week", hint: "Your next steps", tasks: tasks.filter(t => t.status !== "DONE" && (!t.dueDate || (new Date(t.dueDate) > today && new Date(t.dueDate) <= weekEnd))) },
+    { title: "Upcoming", hint: "A little further ahead", tasks: tasks.filter(t => t.status !== "DONE" && t.dueDate && new Date(t.dueDate) > weekEnd) },
+    { title: "Completed", hint: "Look how far you’ve come", tasks: tasks.filter(t => t.status === "DONE") },
+  ].filter(group => group.tasks.length > 0);
 
   return (
     <>
@@ -111,9 +121,12 @@ export function PlannerBoard({ initialTasks }: { initialTasks: WeddingTask[] }) 
         />
       </div>
 
-      <div className="mt-5 divide-y divide-[#eeeae5]">
-        {tasks.map(t => (
-          <div className="flex items-center gap-3 py-4" key={t.id}>
+      <div className="mt-7 space-y-7">
+        {groups.map(group => <section key={group.title} aria-label={group.title}>
+          <div className="mb-1 flex items-baseline justify-between"><div><h2 className="serif text-xl">{group.title}</h2><p className="mt-1 text-xs text-[#817970]">{group.hint}</p></div><span className="rounded-full bg-[#f5f1ed] px-2.5 py-1 text-[10px] text-[#817970]">{group.tasks.length}</span></div>
+          <div className="divide-y divide-[#eeeae5]">
+        {group.tasks.map(t => (
+          <div className="flex flex-wrap items-center gap-3 py-4" key={t.id}>
             <button
               aria-label={t.status === "DONE" ? "Mark incomplete" : "Complete task"}
               onClick={() => handleToggle(t.id, t.status)}
@@ -130,6 +143,7 @@ export function PlannerBoard({ initialTasks }: { initialTasks: WeddingTask[] }) 
             <span className="rounded-full bg-[#f4efea] px-3 py-1.5 text-[10px] text-[#817970]">
               {t.category}
             </span>
+            {t.dueDate && <span className={`hidden text-[11px] sm:inline ${t.status !== "DONE" && new Date(t.dueDate) < today ? "text-[#a05248]" : "text-[#817970]"}`}>{new Date(t.dueDate).toLocaleDateString("en-EG", { day: "numeric", month: "short" })}</span>}
             <button aria-label={`Edit ${t.title}`} onClick={() => { const nextTitle = window.prompt("Task name", t.title); if (!nextTitle?.trim()) return; const nextCategory = window.prompt("Category", t.category); if (!nextCategory?.trim()) return; startTransition(async () => { const result = await updateTask({ id: t.id, title: nextTitle, category: nextCategory }); if (result.ok) setTasks((prev) => prev.map((task) => task.id === t.id ? { ...task, title: nextTitle.trim(), category: nextCategory } : task)); else setError(result.error); }); }} disabled={isPending} className="p-2 text-[#a8a098] hover:text-[#302d29] disabled:opacity-50"><Pencil size={14}/></button>
             <button
               aria-label="Delete task"
@@ -141,11 +155,9 @@ export function PlannerBoard({ initialTasks }: { initialTasks: WeddingTask[] }) 
             </button>
           </div>
         ))}
-        {tasks.length === 0 && (
-          <div className="py-8 text-center text-sm text-[#817970]">
-            No tasks yet. Add one above!
           </div>
-        )}
+        </section>)}
+        {tasks.length === 0 && <div className="rounded-2xl border border-dashed border-[#d8d0c8] bg-[#fbf9f7] px-5 py-10 text-center"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#f0e7df]"><Check size={18} className="text-[#a6796f]"/></div><p className="serif mt-4 text-xl">Your plan is ready for its first step.</p><p className="mt-2 text-sm text-[#817970]">Add a task above and we’ll help you keep everything moving.</p></div>}
       </div>
     </>
   );
